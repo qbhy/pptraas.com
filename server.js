@@ -17,6 +17,7 @@
 const express = require('express');
 const puppeteer = require('puppeteer');
 const randomUUID = require('random-uuid');
+const bodyParser = require('body-parser');
 const fs = require('fs');
 const util = require('util');
 const marked = require('marked');
@@ -38,6 +39,10 @@ const isAllowedUrl = (string) => {
         return false;
     }
 };
+
+app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({extended: false}));
+
 // Adds cors, records analytics hit, and prevents self-calling loops.
 app.use((request, response, next) => {
     const url = request.query.url;
@@ -108,21 +113,20 @@ app.all('*', async (request, response, next) => {
     next(); // pass control on to routes.
 });
 
-app.get('/screenshot', async (request, response) => {
+app.post('/screenshot', async (request, response) => {
 
     // 启动计时器
     console.time('testForEach');
 
-
-    const url = request.query.url;
-    if (!url) {
-        return response.status(400).send(
-                'Please provide a URL. Example: ?url=https://example.com');
-    }
+    // const url = request.query.url;
+    // if (!url) {
+    //     return response.status(400).send(
+    //         'Please provide a URL. Example: ?url=https://example.com');
+    // }
 
     // Default to a reasonably large viewport for full page screenshots.
     const viewport = {
-        width: 1280,
+        width: 640,
         height: 1024,
         deviceScaleFactor: 2
     };
@@ -133,7 +137,7 @@ app.get('/screenshot', async (request, response) => {
         const [width, height] = size.split(',').map(item => Number(item));
         if (!(isFinite(width) && isFinite(height))) {
             return response.status(400).send(
-                    'Malformed size parameter. Example: ?size=800,600');
+                'Malformed size parameter. Example: ?size=800,600');
         }
         viewport.width = width;
         viewport.height = height;
@@ -150,8 +154,12 @@ app.get('/screenshot', async (request, response) => {
 
         await page.setViewport(viewport);
 
+        // console.log('html:', request.body.html);
+
+        // page.setContent(request.body.html);
+
         console.time('goto');
-        await page.goto(url);
+        await page.goto(request.body.url);
         console.timeEnd('goto');
 
 
@@ -188,7 +196,7 @@ app.get('/metrics', async (request, response) => {
     const url = request.query.url;
     if (!url) {
         return response.status(400).send(
-                'Please provide a URL. Example: ?url=https://example.com');
+            'Please provide a URL. Example: ?url=https://example.com');
     }
 
     const browser = response.locals.browser;
@@ -204,7 +212,7 @@ app.get('/pdf', async (request, response) => {
     const url = request.query.url;
     if (!url) {
         return response.status(400).send(
-                'Please provide a URL. Example: ?url=https://example.com');
+            'Please provide a URL. Example: ?url=https://example.com');
     }
 
     const browser = response.locals.browser;
@@ -221,7 +229,7 @@ app.get('/ssr', async (request, response) => {
     const url = request.query.url;
     if (!url) {
         return response.status(400).send(
-                'Please provide a URL. Example: ?url=https://example.com');
+            'Please provide a URL. Example: ?url=https://example.com');
     }
 
     const browser = response.locals.browser;
@@ -257,7 +265,7 @@ app.get('/trace', async (request, response) => {
     const url = request.query.url;
     if (!url) {
         return response.status(400).send(
-                'Please provide a URL. Example: ?url=https://example.com');
+            'Please provide a URL. Example: ?url=https://example.com');
     }
 
     const browser = response.locals.browser;
@@ -290,7 +298,7 @@ app.get('/gsearch', async (request, response) => {
     const url = request.query.url;
     if (!url) {
         return response.status(400).send(
-                'Please provide a URL. Example: ?url=https://example.com');
+            'Please provide a URL. Example: ?url=https://example.com');
     }
 
     const browser = response.locals.browser;

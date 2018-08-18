@@ -11,6 +11,7 @@
     "test": "npm run lint"
   },
   "dependencies": {
+    "body-parser": "^1.18.3",
     "caniuse-db": "^1.0.30000833",
     "express": "^4.16.3",
     "marked": "^0.3.19",
