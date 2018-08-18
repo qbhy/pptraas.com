@@ -109,6 +109,11 @@ app.all('*', async (request, response, next) => {
 });
 
 app.get('/screenshot', async (request, response) => {
+
+    // 启动计时器
+    console.time('testForEach');
+
+
     const url = request.query.url;
     if (!url) {
         return response.status(400).send(
@@ -139,9 +144,16 @@ app.get('/screenshot', async (request, response) => {
     const browser = response.locals.browser;
 
     try {
+        console.time('newPage');
         const page = await browser.newPage();
+        console.timeEnd('newPage');
+
         await page.setViewport(viewport);
-        await page.goto(url, {waitUntil: 'networkidle0'});
+
+        console.time('goto');
+        await page.goto(url);
+        console.timeEnd('goto');
+
 
         const opts = {
             fullPage,
@@ -157,9 +169,15 @@ app.get('/screenshot', async (request, response) => {
             };
         }
 
+        console.time('screenshot');
         const buffer = await page.screenshot(opts);
+        console.timeEnd('screenshot');
+
         await page.close();
         response.type('image/png').send(buffer);
+
+        console.timeEnd('testForEach');
+
     } catch (err) {
         response.status(500).send(err.toString());
     }
